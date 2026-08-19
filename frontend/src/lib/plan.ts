@@ -1,0 +1,44 @@
+import { CONTENT_POOL } from "../data/contentPool";
+import { MODULES, MODULE_OFFSET, weekThemeOf } from "../data/themes";
+import type { DailyPlan, ContentEntry } from "./types";
+function daysSinceMonthStart(dateStr: string): number {
+  const d = new Date(dateStr + "T12:00:00");
+  const start = new Date(d.getFullYear(), d.getMonth(), 1);
+  return Math.floor((+d - +start)/86400000);
+}
+function deterministicPick<T>(pool: T[], count: number, seed: number): T[] {
+  if (pool.length===0) return [];
+  const n = pool.length;
+  const start = ((seed % n)+n)%n;
+  return Array.from({length: Math.min(count,n)}, (_,i)=> pool[(start+i)%n]);
+}
+function preferUncompleted(pool: ContentEntry[], checks: Record<string,boolean>): ContentEntry[] {
+  if (!checks || Object.keys(checks).length===0) return pool;
+  const un = pool.filter(c=> !checks[c.id]);
+  const done = pool.filter(c=> checks[c.id]);
+  return un.length>= pool.length/2 ? [...un, ...done] : pool;
+}
+export function buildDailyPlan(opts: { grade: number; dateStr: string; enableEnglish: boolean; enableQuality: boolean; dailyChecks: Record<string,boolean>; manualIds: string[]; }): DailyPlan {
+  const gradeKey = `g${opts.grade}`;
+  const weekTheme = weekThemeOf(opts.dateStr);
+  const dayIndex = daysSinceMonthStart(opts.dateStr);
+  const modules = MODULES
+    .filter(m=> !(m.subject==="英语" && !opts.enableEnglish))
+    .filter(m=> !(m.subject==="素质劳动" && !opts.enableQuality))
+    .map(m=>{
+      let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
+      pool = preferUncompleted(pool, opts.dailyChecks);
+      const quota = m.quota;
+      const offset = MODULE_OFFSET[m.moduleKey] ?? 0;
+      const items = deterministicPick(pool, quota, dayIndex + offset + opts.grade*13);
+      return { moduleKey: m.moduleKey, title: m.title, items };
+    });
+  const manualItems = opts.manualIds.map(id=> CONTENT_POOL.find(c=>c.id===id)).filter(Boolean) as ContentEntry[];
+  return { date: opts.dateStr, gradeKey, weekTheme, modules, manualItems };
+}
+export function speak(text: string) {
+  if (!("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US"; u.rate = 0.9;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}

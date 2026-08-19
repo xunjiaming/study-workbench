@@ -1,152 +1,320 @@
-# 设计方案：小学生学习辅导工作台
+# 设计方案：小学生学习辅导工作台（v2 可实施版）
 
-> 文档状态：待讨论、待冻结的方案草案。当前阶段只写方案，不建代码。
+> 文档状态：已冻结（2026-08-19）。与 REQUIREMENTS F1-F12 同步冻结为 v2 可实施基线；本阶段不写业务代码，进入实现前需以此版为基准。
+
+## 0. 决策基线
+
+- 真生成可用练习/口语（F7）：每日条目均为可直接照做的抄写/朗读/口算/口语，非模板占位。
+- AI 草稿 + 人工审核、全年级全学科覆盖（F8/F2）：1-6 年级 × 5-6 学科，每池 ≥10 条，未审核不入库。
+- 已完成可重复 + 活动库手工筛选加入（F9）：已完成不强制消失，筛新内容手工加入今日。
+- 多设备在线访问、数据本地存储 + 手动导出导入、无账号云同步（F10/F12）。
+- 本期不做孩子端（家长为主用户）。
+
+---
 
 ## 1. 总体形态
 
-采用“内容数据层 + 渲染层”的单页应用，参照「伊伊早教工作台」的架构思路，把内容与界面解耦，便于按年级维护：
+单页应用，内容与渲染解耦，参照「伊伊早教工作台」分层：
 
-- 学生档案层：维护年级、学期、教材版本、每日时段与偏好。
-- 内容数据层：预置的手工维护内容库，按年级、学科、主题、每日模板组织。
-- 年级判定层：把年级与学期映射到对应内容带。
-- 计划生成层：用“年级 + 当前日期 + 周主题”确定性轮换生成每日计划。
-- 渲染层：左侧导航 + 右侧板块滚动视图。
-- 数据层：本机存储（localStorage / IndexedDB），导出导入 JSON。
-
-## 2. 数据模型
-
-### 学生档案（StudentProfile）
-
-```json
-{
-  "nickname": "乖乖",
-  "grade": 2,
-  "semester": "上",
-  "textbook": { "chinese": "人教版", "math": "人教版", "english": "人教版" },
-  "dailyTimeSlot": "每天下午约45分钟",
-  "weakSubjects": ["数学"],
-  "enableEnglish": true,
-  "enableQuality": true
-}
+```
+学生档案层（Profile + GradeBand 映射）
+  → 内容数据层（审核后内容池，年级×学科×主题）
+    → 年级判定层（grade+semester → gradeKey）
+      → 计划生成层（确定性抽取 + 已完成过滤 + 手工叠加）
+        → 渲染层（左导航 + 右模块滚动）
+          → 数据层（localStorage + IndexedDB，导出导入 JSON）
 ```
 
-### 年级带（GradeBand）
+无后端、无账号；静态站点即可部署。
 
-```json
-{
-  "key": "g2",
-  "grade": 2,
-  "name": "二年级",
-  "semesterFocus": "写话起步 · 表内乘除法 · 绘本阅读",
-  "dailyMinutes": { "chinese": 20, "math": 20, "english": 15, "sports": 15, "quality": 15 }
-}
-```
+---
 
-### 内容条目（ContentEntry）
+## 2. 信息架构与路由
 
-```json
-{
-  "id": "g2-math-oral-014",
-  "gradeKey": "g2",
-  "subject": "数学",
-  "theme": "口算",
-  "title": "表内乘法卡",
-  "materials": "白纸、铅笔、家中物品",
-  "how": "用家中物品分组数一数，家长口头出题，孩子答后自主批对。",
-  "duration": "15分钟",
-  "safety": "无；保持桌面清空只留本项。"
-}
-```
+### 2.1 导航结构（左栏常驻，不收起）
 
-### 每日模块（DailyModule）
-
-```json
-{
-  "moduleKey": "chinese",
-  "title": "语文积累",
-  "items": [
-    { "id": "...", "title": "生字三遍", "how": "抄写今日生字，一次一个，细致不贪多。", "note": "可明日补" }
-  ]
-}
-```
-
-### 观察项（ObservationItem）
-
-```json
-{
-  "id": "g2-observe-focus-01",
-  "gradeKey": "g2",
-  "category": "专注力",
-  "label": "能连续专注15分钟不被打断"
-}
-```
-
-### 本地存储键
-
-- `study.profile.v1`：学生档案。
-- `study.dailyChecks.v1`：每日打勾记录（按日期）。
-- `study.observationChecks.v1`：观察记录（按条目 id）。
-- `study.archives.v1`：跨年级归档。
-- `study.audio`（IndexedDB）：家长上传或内置的磨耳朵音频。
-
-## 3. 年级划分（1-6 年级）
-
-| 年级 | 关键侧重 | 说明 |
+| 路由 | 名称 | 职责 |
 |---|---|---|
-| 一年级 | 习惯奠基 · 拼音与识字 · 百以内 | 坐姿、朗读、口算启蒙、生活识字 |
-| 二年级 | 写话起步 · 表内乘除 · 独立阅读 | 短句表达、乘法学习、绘本与桥梁书 |
-| 三年级 | 独立阅读 · 英语起步 · 应用题 | 长文理解、英语磨耳朵、列式表达 |
-| 四年级 | 读写深化 · 小数分数 · 分析 | 概括与复述、分数小数、错题复盘 |
-| 五年级 | 阅读策略 · 多步运算 · 表达 | 批注阅读、方程意识、口语表达 |
-| 六年级 | 综合运用 · 复习规划 · 过渡 | 结构化复习、时间管理、小初衔接 |
+| `/` | 今日 | 当日计划（6 大模块）、打勾、再做一次、今日手工条目 |
+| `/library` | 活动库 | 按年级×学科×主题筛选，预览条目，手工加入今日/收藏 |
+| `/observation` | 学习观察 | 按年级的观察项打勾，跨年级归档回看 |
+| `/profile` | 档案/设置 | 昵称、年级/学期、教材版本、时段、薄弱偏好、英语/素质开关 |
+| `/me` | 我的 | 导出/导入 JSON、归档浏览、使用说明 |
 
-## 4. 计划生成逻辑
+### 2.2 页面联动
 
-1. 当前年级带 = 由档案中的年级与学期映射得到。
-2. 周主题 = 由 ISO 周数取模得到（建议为固定主题循环，可配置）。
-3. 每日模块 = 从年级带对应学科内容池，用“日序号 + 模块偏移”确定性抽取：
-   - 语文积累：2-3 条；
-   - 数学思维：2-3 条；
-   - 英语积累：1 段磨耳朵 + 2 句口语；
-   - 运动与健康：2-3 条；
-   - 素质与劳动：2-3 条（可关闭）；
-   - 学习观察提醒：2-3 条。
-4. 结果稳定可复现：同一天、同年级、同主题必然得到相同计划，刷新不跳动。
+- 今日页：左栏 6 模块锚点，点击滚动到右侧对应板块；顶部显示当前年级带与本周主题。
+- 活动库 → 今日：手工加入后在今日顶部以“今日加入”分组展示，与自动条目同等打勾。
+- 档案变更（改年级/学期）→ 次日计划即按新年级带生成，旧记录写入归档。
 
-## 5. 内容维护策略
+---
 
-- 以手工精选内容池为主（可落地、稳定、安全、贴合教材节奏），不直接内置受版权保护的整册题目。
-- 每个年级 × 每个学科配置独立内容池，条目数建议 10 条以上以保证轮换多样性。
-- 提供“家长指定教材页/单元 → 系统套用练习模板”的协作方式，兼顾学校进度与版权边界。
-- 内容须人工审核并标注安全与时长提示，不以未审核结果直接上线。
-- 后续可提供“AI 草稿 + 人工审核”增量能力，但不作为默认。
+## 3. 数据模型（定稿）
 
-## 6. 用户流程
+### 3.1 StudentProfile
 
-1. 首次使用：设置昵称、年级、学期、教材版本、每日时段与偏好。
-2. 日常使用：打开“今日”→ 看当前年级计划 → 完成打勾。
-3. 周更：每周主题自动轮换，同主题按年级渐进。
-4. 学期/升年级：跨越边界时自动切换内容带，旧记录归档。
-5. 备份：到“我的”导出/导入 JSON。
+```ts
+type Semester = "上" | "下";
+type TextbookVersion = "人教版" | "北师大版" | "苏教版" | "其他";
+interface StudentProfile {
+  nickname: string;
+  grade: 1|2|3|4|5|6;
+  semester: Semester;
+  textbook: { chinese: TextbookVersion; math: TextbookVersion; english: TextbookVersion };
+  dailyTimeSlot: string;
+  weakSubjects: string[];
+  enableEnglish: boolean;
+  enableQuality: boolean;
+  updatedAt: string;
+}
+```
 
-## 7. 技术栈与部署（方向草案）
+### 3.2 GradeBand
 
-- 前端：React + Vite + TypeScript，PWA（service worker + manifest），本地存储。
-- 语音：浏览器 Web Speech API 播报英语短句；磨耳朵音频由内置或用户上传并本地存储。
-- 部署：静态站点托管，可选 GitHub Pages / Vercel / Netlify，生成可添加到主屏幕的 PWA 链接。
-- 多设备：默认本机数据 + 手动导出导入；如需自动同步再引入账号云同步（需另行确认）。
+```ts
+interface GradeBand {
+  key: string;
+  grade: number;
+  name: string;
+  semesterFocus: string;
+  dailyMinutes: { chinese: number; math: number; english: number; sports: number; quality: number };
+}
+```
 
-## 8. 分阶段落地
+### 3.3 ContentEntry（内容池原子）
 
-- 阶段 A：完成需求与方案冻结，圈定 1-2 个年级为原型样例。
-- 阶段 B：接入学生档案与年级判定，建立 6 个年级带模型与基础布局。
-- 阶段 C：填充各年级每日模块内容池、观察项、书单与英语池。
-- 阶段 D：上线部署，适配添加主屏幕与多设备访问。
+```ts
+type Subject = "语文" | "数学" | "英语" | "运动健康" | "素质劳动" | "观察提醒";
+interface ContentEntry {
+  id: string;
+  gradeKey: string;
+  subject: Subject;
+  theme: string;
+  title: string;
+  materials: string;
+  how: string;
+  duration: string;
+  safety: string;
+  source: "ai_draft" | "human_reviewed";
+  reviewed: boolean;
+  tags?: string[];
+}
+```
 
-## 9. 风险与回滚
+入库门槛：reviewed===true 且 materials/how/duration/safety 非空且时长 ≤20 分钟。
 
-- 内容失配风险：以“教材模板 + 家长指定单元”方式降低年级与学校进度失配。
-- 版权风险：不内置受版权保护的整册教材题目，书单只给建议。
-- 施压风险：所有条目带“可跳过/明日再补”退路，不展示成绩排名。
-- 数据丢失风险：本机存储 + 定期导出建议；上线后可选云同步。
-- 屏幕依赖风险：明确分级，学习以纸面与生活为主，手机定位为计划清单。
+### 3.4 DailyPlan / DailyModule
+
+```ts
+interface DailyModule {
+  moduleKey: "chinese" | "math" | "english" | "sports" | "quality" | "observation";
+  title: string;
+  items: ContentEntry[];
+}
+interface DailyPlan {
+  date: string;
+  gradeKey: string;
+  weekTheme: string;
+  modules: DailyModule[];
+  manualItems: ContentEntry[];
+}
+```
+
+### 3.5 TaskCheck（打勾与手工选择）
+
+```ts
+interface DayChecks {
+  date: string;
+  checks: Record<string, boolean>;
+  manualPicks: string[];
+  repeatable: true;
+}
+```
+
+### 3.6 ObservationItem
+
+```ts
+interface ObservationItem {
+  id: string;
+  gradeKey: string;
+  category: "专注力"|"读写姿势"|"阅读习惯"|"作业效率"|"错题整理"|"情绪状态";
+  label: string;
+}
+```
+
+### 3.7 本地存储键与版本
+
+| 键 | 存储 | 结构 |
+|---|---|---|
+| `study.profile.v1` | localStorage | StudentProfile |
+| `study.gradeBands.v1` | localStorage（预置只读） | GradeBand[] |
+| `study.contentPool.v1` | localStorage（预置只读，打包时注入） | ContentEntry[] |
+| `study.dailyChecks.v1` | localStorage | Record<date, DayChecks> |
+| `study.manualPicks.v1` | localStorage | Record<date, string[]> |
+| `study.observationChecks.v1` | localStorage | Record<id, boolean> |
+| `study.archives.v1` | localStorage | { gradeKey: DayChecks[] }[] |
+| `study.audio` | IndexedDB store audio | { id, blob, name } |
+
+版本策略：键后缀 .v1 固定；结构变更时新增 .v2 并在启动时做一次性迁移。
+
+---
+
+## 4. 年级划分与模块配额
+
+| 年级 | 关键侧重 | 日配额 |
+|---|---|---|
+| 一年级 | 习惯奠基 · 拼音与识字 · 百以内 | 语文3/数学2/英语2/运动2/素质2/观察2 |
+| 二年级 | 写话起步 · 表内乘除 · 独立阅读 | 语文3/数学3/英语3/运动2/素质2/观察2 |
+| 三年级 | 独立阅读 · 英语起步 · 应用题 | 语文3/数学3/英语3/运动2/素质2/观察2 |
+| 四年级 | 读写深化 · 小数分数 · 分析 | 语文3/数学3/英语3/运动2/素质2/观察2 |
+| 五年级 | 阅读策略 · 多步运算 · 表达 | 语文3/数学3/英语3/运动2/素质2/观察2 |
+| 六年级 | 综合运用 · 复习规划 · 过渡 | 语文3/数学3/英语3/运动2/素质2/观察3 |
+
+周主题（固定循环）：阅读周、口算周、词汇积累周、表达周、科普实验周、劳动生活周、复盘周。
+
+---
+
+## 5. 计划生成算法（确定性）
+
+### 5.1 输入
+
+- profile.grade / semester → gradeKey
+- date（本地 YYYY-MM-DD）
+- 内容池（已审核子集）
+
+### 5.2 伪代码
+
+```ts
+function getWeekTheme(date: string): string {
+  const week = isoWeekNumber(date);
+  return THEMES[week % THEMES.length];
+}
+function deterministicPick(pool, count, seed) {
+  const n = pool.length;
+  const start = ((seed % n) + n) % n;
+  return Array.from({length: count}, (_, i) => pool[(start + i) % n]);
+}
+function buildDailyPlan(profile, date) {
+  const gradeKey = "g" + profile.grade;
+  const weekTheme = getWeekTheme(date);
+  const dayIndex = daysSinceSemesterStart(date, profile.semester);
+  const manualIds = loadManualPicks(date);
+  const modules = MODULES.map(m => {
+    let pool = contentPool.filter(c => c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed);
+    if (m.subject === "素质劳动" && !profile.enableQuality) return null;
+    if (m.subject === "英语" && !profile.enableEnglish) return null;
+    pool = preferUncompleted(pool, date);
+    const quota = m.quota;
+    const offset = MODULE_OFFSET[m.moduleKey];
+    const items = deterministicPick(pool, quota, dayIndex + offset);
+    return { moduleKey: m.moduleKey, title: m.title, items };
+  }).filter(Boolean);
+  const manualItems = manualIds.map(id => contentPool.find(c=>c.id===id)).filter(Boolean);
+  return { date, gradeKey, weekTheme, modules, manualItems };
+}
+```
+
+### 5.3 规则
+
+- 同一天、同年级、同周主题的自动部分必相同；手工部分按 localStorage 叠加。
+- 已完成过滤仅改变排序偏好，不改变确定性；已完成仍可“再做一次”。
+- 手工加入次日不自动携带，需家长再次加入。
+
+---
+
+## 6. 内容生产与审核流水线（SOP）
+
+### 6.1 AI 草稿边界
+
+- 输入：年级大纲要点 + 学科 + 主题 + 时长 10-20 分钟 + 家庭实物优先。
+- 输出字段必须齐全：title/materials/how/duration/safety，且 how 可直接照做。
+- 禁止：整册搬运版权教材、超纲超量、依赖屏幕刷题、含风险操作。
+
+### 6.2 人工审核清单（逐条打勾）
+
+- [ ] 贴合教材节奏与年级难度
+- [ ] 时长 10-20 分钟可落地
+- [ ] 材料为家庭常见实物/文具/书本
+- [ ] 步骤清晰，家长无需二次编写
+- [ ] 安全提示完整，无风险操作
+- [ ] 版权合规，未搬运整册题目
+- [ ] 语言温和，无施压/排名表述
+
+仅全部通过的条目标记 reviewed=true 进入打包。
+
+### 6.3 规模与打包
+
+- 6 年级 × 5-6 学科 × ≥10 条 ≈ 300-400 条起步；后续按需扩至每池 20-30 条。
+- 内容池以 JSON 随前端打包发布，更新即发版，无需改代码。
+
+---
+
+## 7. 交互与视觉（概要）
+
+- 左栏：常驻 5 项导航，彩色图标 + 文字，宽度 200-240px，不收起。
+- 右区：6 模块纵向堆叠，每模块卡片式，标题 + 条目列表；条目含标题、时长、材料、玩法、左侧复选框。
+- 状态：未完成/已完成（勾选态）、今日加入（高亮分组）、可跳过/明日再补。
+- 空状态：活动库无结果时提示“试试换个年级或主题”；手工加入后轻量 toast。
+- 响应式：移动端左栏收为底部 Tab，右区单列滚动。
+
+---
+
+## 8. 存储、导入导出与归档
+
+导出 JSON 含 version/profile/dailyChecks/observationChecks/archives/manualCollections；导入时校验并合并，失败保留原数据。升年级时上一阶段 dailyChecks 按 gradeKey 归档。
+
+---
+
+## 9. 技术栈与工程
+
+- 前端：React 19 + Vite + TypeScript + PWA（vite-plugin-pwa）
+- 语音：Web Speech API + IndexedDB（study.audio）
+- 部署：GitHub Pages 首选，Actions 发布
+- 质量：单文件 ≤500 行，目录深度 ≤3
+
+---
+
+## 10. 分阶段落地（细化）
+
+| 阶段 | 目标 | 完成标志 |
+|---|---|---|
+| A 冻结 | 需求与方案 v2 冻结 | 三处口径一致，评审通过 |
+| B 基座 | 档案与年级判定 + 布局 + 生成算法 | 同年级同日生成稳定，档案切换次日生效 |
+| C 内容 | 全量内容池建设与审核入库 | 1-6 年级各学科可筛可加可打勾，抽检 20 条可用性 100% |
+| D 上线 | PWA 与多设备闭环 | 三端可访问，导出导入往返不丢数据 |
+
+---
+
+## 11. 验收映射（对 REQUIREMENTS 第 6 章）
+
+| 验收项 | 设计落位 | 验证方式 |
+|---|---|---|
+| 年级自适应次日生效 | 映射与归档 | 改年级后次日 plan.gradeKey 变化 |
+| 同日同年级结果稳定 | deterministicPick | 同参两次 buildDailyPlan id 相等 |
+| 真生成可用 | 字段与审核清单 | 抽检条目 materials/how 齐全且可照做 |
+| 全量覆盖且已审核 | 每池≥10 且 reviewed | 统计 contentPool 按 gradeKey×subject 分组计数 |
+| 已完成复用+手工选 | manualPicks 叠加 | 打勾可取消重做；活动库加入后持久化 |
+| 多设备在线+导入导出 | 静态部署+JSON 往返 | 三端访问 + 导出导入数据一致 |
+| 无账号云同步 | 本机存储 | 无登录入口，无云端写入 |
+
+---
+
+## 12. 风险与回滚
+
+| 风险 | 缓解 | 回滚 |
+|---|---|---|
+| 内容与学校进度失配 | 教材版本字段 + 手工替换/筛选 | 活动库覆盖自动条目 |
+| 版权 | 不搬整册 + 人工合规审 | 下架争议条目，重发内容池 |
+| 规模压力（300+ 条） | AI 草稿提效但坚持审核门禁 | 分批入库，先每池 10 条 |
+| 数据丢失 | 本机 + 导出提醒 | 导入备份恢复 |
+| 施压感 | 每条“可跳过/明日再补”，无排名 | 文案回退 |
+
+---
+
+## 13. 附录
+
+- ID 规范：g{grade}-{subjectPinyin}-{themePinyin}-{seq:03d}
+- 主题枚举：阅读、口算、词汇、表达、科普实验、劳动生活、复盘
+- 周主题可配置：THEMES 数组替换即生效，按生成时主题快照存储 weekTheme。
+
+> 本方案与 docs/REQUIREMENTS.md 5 项冻结决策一致；改动需同步更新 REQUIREMENTS 与 README。

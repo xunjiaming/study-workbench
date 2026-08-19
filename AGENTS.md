@@ -1,22 +1,23 @@
 # study-workbench 项目级规则
 
-本项目当前处于「需求框架」阶段，尚未进入代码开发。
+本项目已进入实现阶段，按 2026-08-19 冻结的需求与方案（F1-F12 / DESIGN v2）实施。
 
 ## 协作约定
 
-- 遵循 `D:\workflow\dev-workflow` 的五段式工作流与结论字段约定（`implementation_status` / `verification_status` / `release_readiness`）。
-- 当前阶段只沉淀需求与方案文档，不写业务代码、不搭建脚手架，除非用户明确进入开发阶段。
-- 改动需求或方案时，必须同步更新「需求框架」「方案草案」与「README」三处的一致性，避免口径漂移。
+- 遵循 `D:\\workflow\\dev-workflow` 的五段式工作流与结论字段约定（`implementation_status` / `verification_status` / `release_readiness`）。
+- 实现阶段按 DESIGN v2 可实施版落地代码，改动需求或方案时必须同步更新「需求框架」「方案草案」与「README」三处一致性。
 - 新增必须交付的文档时，先在本文档「文档清单」登记。
 
 ## 文档清单
 
 | 产物 | 路径 | 现状 |
 |---|---|---|
-| 项目入口说明 | `README.md` | 已建立（框架口径） |
+| 项目入口说明 | `README.md` | 已更新（实现阶段，已可用） |
 | 项目级规则 | `AGENTS.md` | 本文档 |
-| 需求框架 | `docs/REQUIREMENTS.md` | 已建立，待讨论冻结 |
-| 方案草案 | `docs/DESIGN.md` | 已建立，待讨论冻结 |
+| 需求框架 | `docs/REQUIREMENTS.md` | 已冻结（2026-08-19，F1-F12） |
+| 方案草案 | `docs/DESIGN.md` | 已冻结（2026-08-19，v2 可实施版） |
+| 前端应用 | `frontend/` | 已实现（Vite + React + PWA，534 条内容池） |
+| 部署流水线 | `.github/workflows/deploy.yml` | 已更新（前端构建 + Jekyll 发布） |
 
 ## 修改约束
 
