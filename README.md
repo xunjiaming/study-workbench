@@ -15,6 +15,12 @@
 - [需求框架](docs/REQUIREMENTS.md)：项目定位、目标用户、年级自适应、每日模块、学科内容池、学习原则、非目标与验收框架。
 - [方案草案](docs/DESIGN.md)：总体形态、数据模型初稿、内容生成思路、技术选型方向与分阶段落地计划。
 
+## 在线访问
+
+- 线上地址：https://xunjiaming.github.io/study-workbench/
+- 仓库：https://github.com/xunjiaming/study-workbench
+- 部署方式：GitHub Pages + GitHub Actions。当前仅发布需求与方案文档，App 开发完成后切换为工作台。
+
 ## 与相邻子项目的关系
 
 - `baby-education`：面向 0-3 岁宝宝的早教工作台，本项目的产品范式来源。
