@@ -47,10 +47,18 @@ function matchesTextbook(entry: ContentEntry, tbVersion?: string): boolean {
 function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[], subject: string): ContentEntry[] {
   const cal = calibrations.find(c=> c.subject === subject);
   if (!cal) return pool;
-  return pool
-    .map(c=> ({ c, w: c.unit == null ? 1 : c.unit < cal.currentUnit ? 0.5 : c.unit === cal.currentUnit ? 2 : 0.3 }))
-    .sort((a,b)=> b.w - a.w)
-    .map(x=> x.c);
+  const cur = pool.filter(c=> c.unit === cal.currentUnit);
+  const future = pool.filter(c=> c.unit != null && c.unit > cal.currentUnit);
+  const noUnit = pool.filter(c=> c.unit == null);
+  // U1 has no "already learned" — dont pad with before
+  const withDetail = (arr: ContentEntry[]) => {
+    const d = arr.filter(c=> (c as any).detail);
+    return d.length>0 ? [...d, ...arr.filter(c=> !(c as any).detail)] : arr;
+  };
+  const curOrdered = withDetail(cur);
+  if (cal.currentUnit === 1) return [...curOrdered, ...withDetail(future), ...noUnit];
+  const before = pool.filter(c=> c.unit != null && c.unit < cal.currentUnit);
+  return [...curOrdered, ...withDetail(before), ...withDetail(future), ...noUnit];
 }
 
 
