@@ -8,6 +8,8 @@
 - \erification_status：\erified（本地 build 通过，待部署后三端验收）
 - elease_readiness：eady_for_preview（可预览，部署后验收即可发布）
 
+教材分版与明细：`ContentEntry.detail` 摊开语文生字/数学题/英语句型，按 `profile.textbook` 过滤展示，支持打印与答案折叠。
+
 本项目的权威口径以 \docs/REQUIREMENTS.md（需求框架 F1-F14，2026-08-20 增量）与 \docs/DESIGN.md（方案草案 v2.1 增量）为准。
 
 ## 已冻结决策（2026-08-19 基线 + 2026-08-20 增量）

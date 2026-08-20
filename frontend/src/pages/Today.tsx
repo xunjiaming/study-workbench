@@ -22,6 +22,7 @@ export default function Today(){
     const termPhase=(profile as any).termPhase ?? "in_term";
     return buildDailyPlan({
       grade:profile.grade, dateStr,
+      textbook: profile.textbook as any,
       enableEnglish:profile.enableEnglish, enableQuality:profile.enableQuality,
       termPhase, previewTargetGrade:(profile as any).previewTargetGrade,
       previewUnits:(profile as any).previewUnits,
@@ -39,7 +40,17 @@ export default function Today(){
     <div className="sub">{profile.nickname} · {profile.grade}年级{profile.semester}学期 · {profile.textbook.chinese}/{profile.textbook.math}/{profile.textbook.english} {isPreview && `→ 预习${(profile as any).previewTargetGrade}年级`}</div>
     <div className="muted">{isPreview ? `预习进度：${preText} · 顶部可按学科各拨 1-4 单元` : `校准：${calText}`} </div>
   </div>
-  {plan.manualItems.length>0 && (<section className="card highlight"><h3>今日加入（手工）</h3>{plan.manualItems.map(it=> (<div key={it.id} className="item"><label><input type="checkbox" checked={!!checks[it.id]} onChange={()=>toggle(it.id)} /> <b>{it.title}</b> <span className="muted">· {it.duration}</span></label><div className="how">{it.how} <span className="muted">｜材料：{it.materials}</span></div><div className="row"><button onClick={()=>removeManual(it.id)}>移除</button>{it.subject==="英语" && <button onClick={()=>speak(it.how)}>🔊 播报</button>}</div><div className="safety">{it.safety} <span className="muted">· 可跳过/明日再补</span></div></div>))}</section>)}
-  {plan.modules.map(m=> (<section key={m.moduleKey} className="card" id={m.moduleKey}><h3>{m.title} <span className="badge">{m.items.length} 项</span></h3>{m.items.map(it=> (<div key={it.id} className="item"><label><input type="checkbox" checked={!!checks[it.id]} onChange={()=>toggle(it.id)} /> <b>{it.title}</b> <span className="muted">· {it.theme} · {it.duration}{it.preview ? " · 预习" : ""}{it.unit ? ` · 第${it.unit}单元` : ""}</span></label><div className="how">{it.how}</div><div className="meta">材料：{it.materials} {it.subject==="英语" && <button onClick={()=>speak(it.how)}>🔊 播报</button>}</div><div className="safety">{it.safety} <span className="muted">· 可跳过/明日再补</span></div></div>))}</section>))}
+  {plan.manualItems.length>0 && (<section className="card highlight"><h3>今日加入（手工）</h3>{plan.manualItems.map(it=> (<div key={it.id} className="item"><label><input type="checkbox" checked={!!checks[it.id]} onChange={()=>toggle(it.id)} /> <b>{it.title}</b> <span className="muted">· {it.duration}</span></label><div className="how">{it.how} <span className="muted">｜材料：{it.materials}</span></div>
+            {it.detail?.chars && <div className="detail-grid">{it.detail.chars.map(c=> <span key={c.char} className="char-chip"><b>{c.char}</b><small>{c.pinyin}</small><small className="muted">{c.words.join(" / ")}</small></span>)}</div>}
+            {it.detail?.problems && <div className="problem-list">{it.detail.problems.map((p,i)=> <div key={i} className="problem-row"><span>{p.q}</span><details className="answer"><summary>答案</summary>{p.a}</details></div>)}</div>}
+            {it.detail?.vocab && <div className="vocab-list">{it.detail.vocab.map(v=> <div key={v.en} className="vocab-row"><b>{v.en}</b><span className="muted"> {v.cn}</span><span> — {v.sentence}</span></div>)}</div>}
+            {it.textbook && <span className="badge outline">{it.textbook}·{it.unit?`第`+it.unit+`单元`:""}</span>}
+            <div className="row"><button onClick={()=>removeManual(it.id)}>移除</button>{it.subject==="英语" && <button onClick={()=>speak(it.how)}>🔊 播报</button>}</div><div className="safety">{it.safety} <span className="muted">· 可跳过/明日再补</span></div></div>))}</section>)}
+  {plan.modules.map(m=> (<section key={m.moduleKey} className="card" id={m.moduleKey}><h3>{m.title} <span className="badge">{m.items.length} 项</span></h3>{m.items.map(it=> (<div key={it.id} className="item"><label><input type="checkbox" checked={!!checks[it.id]} onChange={()=>toggle(it.id)} /> <b>{it.title}</b> <span className="muted">· {it.theme} · {it.duration}{it.preview ? " · 预习" : ""}{it.unit ? ` · 第${it.unit}单元` : ""}</span></label><div className="how">{it.how}</div>
+            {it.detail?.chars && <div className="detail-grid">{it.detail.chars.map(c=> <span key={c.char} className="char-chip"><b>{c.char}</b><small>{c.pinyin}</small><small className="muted">{c.words.join(" / ")}</small></span>)}</div>}
+            {it.detail?.problems && <div className="problem-list">{it.detail.problems.map((p,i)=> <div key={i} className="problem-row"><span>{p.q}</span><details className="answer"><summary>答案</summary>{p.a}</details></div>)}</div>}
+            {it.detail?.vocab && <div className="vocab-list">{it.detail.vocab.map(v=> <div key={v.en} className="vocab-row"><b>{v.en}</b><span className="muted"> {v.cn}</span><span> — {v.sentence}</span></div>)}</div>}
+            {it.textbook && <span className="badge outline">{it.textbook}·{it.unit?`第`+it.unit+`单元`:""}</span>}
+            <div className="meta">材料：{it.materials} {it.subject==="英语" && <button onClick={()=>speak(it.how)}>🔊 播报</button>}</div><div className="safety">{it.safety} <span className="muted">· 可跳过/明日再补</span></div></div>))}</section>))}
   </div>);
 }

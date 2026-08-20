@@ -1,4 +1,5 @@
 import type { ContentEntry } from "../lib/types";
+import { CURRICULUM_ENTRIES } from "./curriculum";
 
 export const CONTENT_POOL: ContentEntry[] = [
   {
@@ -8102,3 +8103,5 @@ export const CONTENT_POOL: ContentEntry[] = [
     "tags": ["预习"]
   }
 ];
+for (const e of CURRICULUM_ENTRIES) CONTENT_POOL.push(e);
+

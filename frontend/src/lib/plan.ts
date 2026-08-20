@@ -29,6 +29,18 @@ function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase, subject:
   const filtered = pool.filter(c=> c.preview && c.unit != null && c.unit <= maxUnit);
   return filtered.length > 0 ? filtered : pool;
 }
+function subjectTextbook(subject: string, tb?: { chinese: string; math: string; english: string }): string | undefined {
+  if (!tb) return undefined;
+  if (subject === "语文") return tb.chinese;
+  if (subject === "数学") return tb.math;
+  if (subject === "英语") return tb.english;
+  return undefined;
+}
+function matchesTextbook(entry: ContentEntry, tbVersion?: string): boolean {
+  if (!entry.textbook) return true;
+  if (!tbVersion || tbVersion === "其他") return true;
+  return entry.textbook === tbVersion;
+}
 function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[], subject: string): ContentEntry[] {
   const cal = calibrations.find(c=> c.subject === subject);
   if (!cal) return pool;
@@ -40,6 +52,7 @@ function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[
 
 export function buildDailyPlan(opts: {
   grade: number;
+  textbook?: { chinese: string; math: string; english: string };
   dateStr: string;
   enableEnglish: boolean;
   enableQuality: boolean;
@@ -58,7 +71,9 @@ export function buildDailyPlan(opts: {
     .filter(m=> !(m.subject==="英语" && !opts.enableEnglish))
     .filter(m=> !(m.subject==="素质劳动" && !opts.enableQuality))
     .map(m=>{
-      let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
+      const tbVersion = subjectTextbook(m.subject, opts.textbook);
+      let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed && matchesTextbook(c, tbVersion)) as ContentEntry[];
+      if (pool.length===0) pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
       if (isPreview) pool = applyPreviewFilter(pool, opts.termPhase, m.subject, opts.previewUnits);
       else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
       pool = preferUncompleted(pool, opts.dailyChecks);

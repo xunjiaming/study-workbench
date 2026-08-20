@@ -105,6 +105,7 @@ interface ContentEntry {
   term?: "上" | "下";
   unit?: number;
   preview?: boolean;
+  textbook?: TextbookVersion;
   title: string;
   materials: string;
   how: string;
@@ -113,6 +114,11 @@ interface ContentEntry {
   source: "ai_draft" | "human_reviewed";
   reviewed: boolean;
   tags?: string[];
+  detail?: {
+    chars?: { char: string; pinyin: string; words: string[] }[];
+    problems?: { q: string; a: string }[];
+    vocab?: { en: string; cn: string; sentence: string }[];
+  };
 }
 `
 
@@ -286,7 +292,7 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 
 - 6 年级 × 5-6 学科 × ≥10 条 ≈ 300-400 条起步；后续按需扩至每池 20-30 条。
 - 预习包：目标年级上学期前 4 单元，每单元 ≥3 条 preview 条目，时长 10-15 分钟，玩法偏绘本/口算卡/实物。
-- 内容池以 JSON 随前端打包发布，更新即发版，无需改代码。
+- 内容池以 JSON 随前端打包发布，更新即发版，无需改代码。教材分版真题存于 `frontend/src/data/curriculum/`，按版本与单元组织，`contentPool` 合并后由 `plan` 按 `profile.textbook` 过滤；`Today/Library` 摊开 `detail` 明细并提供教材筛选与打印样式。
 
 ---
 

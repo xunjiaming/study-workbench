@@ -41,6 +41,7 @@ export interface ContentEntry {
   term?: "上" | "下";
   unit?: number;
   preview?: boolean;
+  textbook?: TextbookVersion;
   title: string;
   materials: string;
   how: string;
@@ -49,6 +50,11 @@ export interface ContentEntry {
   source: "ai_draft" | "human_reviewed";
   reviewed: boolean;
   tags?: string[];
+  detail?: {
+    chars?: { char: string; pinyin: string; words: string[] }[];
+    problems?: { q: string; a: string }[];
+    vocab?: { en: string; cn: string; sentence: string }[];
+  };
 }
 
 export type ModuleKey = "chinese" | "math" | "english" | "sports" | "quality" | "observation";
