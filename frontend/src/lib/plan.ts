@@ -84,7 +84,7 @@ function genProblems(grade:number, theme:string, rng:()=>number, count=6){
       else if(g===4){ const a=randInt(rng,100,600), b=randInt(rng,100,400); out.push(choice(rng,[{q:a+" + "+b+" = ",a:String(a+b)},{q:(a+b)+" - "+a+" = ",a:String(b)}])); }
       else { const a=randInt(rng,12,48), b=randInt(rng,12,48); out.push({q:a+" × "+b+" = ",a:String(a*b)}); }
     } else if(theme==="应用题"){
-      if(g<=2){ const a=randInt(rng,8,30), b=randInt(rng,5,20); out.push({q:"妈妈买了"+a+"个苹果，吃掉"+b+"个，还剩？",a:(a-b)+"个"}); }
+      if(g<=2){ let a=randInt(rng,8,30), b=randInt(rng,5,20); if(b>a) [a,b]=[b,a]; out.push({q:"妈妈买了"+a+"个苹果，吃掉"+b+"个，还剩？",a:(a-b)+"个"}); }
       else { const a=randInt(rng,12,36), b=randInt(rng,3,7); out.push({q:"每盒"+a+"个，"+b+"盒共有？",a:(a*b)+"个"}); }
     } else if(theme==="思维"){
       out.push(choice(rng,[{q:"找规律：2,4,6,( )",a:"8"},{q:"数一数：正方形有( )条边",a:"4"},{q:"一题多解：8+6=？写2种方法",a:"14"}]));
@@ -191,9 +191,16 @@ export function buildDailyPlan(opts: {
           }
         }
       } else {
-        const off = MODULE_OFFSET[m.moduleKey] ?? 0;
-        items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
-        if(m.subject==="数学") items = patchMathEntries(items, opts.grade, opts.dateStr);
+        if(!isPreview && opts.calibrations.length>0){
+          // calibrated sync: take head of calibrated order (U1 first), no calendar rotation
+          items = pool.slice(0, quota);
+          if(items.length < quota) items = items.concat(pool.slice(0, quota - items.length));
+          if(m.subject==="数学") items = patchMathEntries(items, opts.grade, opts.dateStr);
+        } else {
+          const off = MODULE_OFFSET[m.moduleKey] ?? 0;
+          items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
+          if(m.subject==="数学") items = patchMathEntries(items, opts.grade, opts.dateStr);
+        }
       }
       return { moduleKey: m.moduleKey, title: m.title, items };
     });
