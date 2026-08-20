@@ -1,4 +1,5 @@
 export type Semester = "上" | "下";
+export type TermPhase = "preview" | "in_term";
 export type TextbookVersion = "人教版" | "北师大版" | "苏教版" | "其他";
 export type Subject = "语文" | "数学" | "英语" | "运动健康" | "素质劳动" | "观察提醒";
 
@@ -11,6 +12,15 @@ export interface StudentProfile {
   weakSubjects: string[];
   enableEnglish: boolean;
   enableQuality: boolean;
+  termPhase: TermPhase;
+  previewTargetGrade?: 1|2|3|4|5|6;
+  schoolStartDate?: string;
+  updatedAt: string;
+}
+
+export interface Calibration {
+  subject: "语文" | "数学" | "英语";
+  currentUnit: number;
   updatedAt: string;
 }
 
@@ -27,6 +37,9 @@ export interface ContentEntry {
   gradeKey: string;
   subject: Subject;
   theme: string;
+  term?: "上" | "下";
+  unit?: number;
+  preview?: boolean;
   title: string;
   materials: string;
   how: string;
@@ -49,6 +62,8 @@ export interface DailyPlan {
   date: string;
   gradeKey: string;
   weekTheme: string;
+  termPhase?: TermPhase;
+  calibrations?: Calibration[];
   modules: DailyModule[];
   manualItems: ContentEntry[];
 }
@@ -71,6 +86,7 @@ export interface ExportPayload {
   version: 1;
   exportedAt: string;
   profile: StudentProfile | null;
+  calibrations: Calibration[];
   dailyChecks: Record<string, DayChecks>;
   observationChecks: Record<string, boolean>;
   archives: Record<string, DayChecks[]>;

@@ -1,6 +1,7 @@
 import { CONTENT_POOL } from "../data/contentPool";
 import { MODULES, MODULE_OFFSET, weekThemeOf } from "../data/themes";
-import type { DailyPlan, ContentEntry } from "./types";
+import type { DailyPlan, ContentEntry, Calibration, TermPhase } from "./types";
+
 function daysSinceMonthStart(dateStr: string): number {
   const d = new Date(dateStr + "T12:00:00");
   const start = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -18,23 +19,54 @@ function preferUncompleted(pool: ContentEntry[], checks: Record<string,boolean>)
   const done = pool.filter(c=> checks[c.id]);
   return un.length>= pool.length/2 ? [...un, ...done] : pool;
 }
-export function buildDailyPlan(opts: { grade: number; dateStr: string; enableEnglish: boolean; enableQuality: boolean; dailyChecks: Record<string,boolean>; manualIds: string[]; }): DailyPlan {
-  const gradeKey = `g${opts.grade}`;
+function resolveGradeKey(grade: number, termPhase: TermPhase, previewTargetGrade?: number): string {
+  if (termPhase === "preview" && previewTargetGrade) return `g${previewTargetGrade}`;
+  return `g${grade}`;
+}
+function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase): ContentEntry[] {
+  if (termPhase !== "preview") return pool;
+  const filtered = pool.filter(c=> c.preview && c.unit != null && c.unit <= 4);
+  return filtered.length > 0 ? filtered : pool;
+}
+function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[], subject: string): ContentEntry[] {
+  const cal = calibrations.find(c=> c.subject === subject);
+  if (!cal) return pool;
+  return pool
+    .map(c=> ({ c, w: c.unit == null ? 1 : c.unit < cal.currentUnit ? 0.5 : c.unit === cal.currentUnit ? 2 : 0.3 }))
+    .sort((a,b)=> b.w - a.w)
+    .map(x=> x.c);
+}
+
+export function buildDailyPlan(opts: {
+  grade: number;
+  dateStr: string;
+  enableEnglish: boolean;
+  enableQuality: boolean;
+  termPhase: TermPhase;
+  previewTargetGrade?: number;
+  calibrations: Calibration[];
+  dailyChecks: Record<string,boolean>;
+  manualIds: string[];
+}): DailyPlan {
+  const gradeKey = resolveGradeKey(opts.grade, opts.termPhase, opts.previewTargetGrade);
   const weekTheme = weekThemeOf(opts.dateStr);
   const dayIndex = daysSinceMonthStart(opts.dateStr);
+  const isPreview = opts.termPhase === "preview";
   const modules = MODULES
     .filter(m=> !(m.subject==="英语" && !opts.enableEnglish))
     .filter(m=> !(m.subject==="素质劳动" && !opts.enableQuality))
     .map(m=>{
       let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
+      if (isPreview) pool = applyPreviewFilter(pool, opts.termPhase);
+      pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
       pool = preferUncompleted(pool, opts.dailyChecks);
-      const quota = m.quota;
+      const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
       const offset = MODULE_OFFSET[m.moduleKey] ?? 0;
       const items = deterministicPick(pool, quota, dayIndex + offset + opts.grade*13);
       return { moduleKey: m.moduleKey, title: m.title, items };
     });
   const manualItems = opts.manualIds.map(id=> CONTENT_POOL.find(c=>c.id===id)).filter(Boolean) as ContentEntry[];
-  return { date: opts.dateStr, gradeKey, weekTheme, modules, manualItems };
+  return { date: opts.dateStr, gradeKey, weekTheme, termPhase: opts.termPhase, calibrations: opts.calibrations, modules, manualItems };
 }
 export function speak(text: string) {
   if (!("speechSynthesis" in window)) return;

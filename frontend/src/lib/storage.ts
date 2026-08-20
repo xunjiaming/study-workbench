@@ -1,4 +1,4 @@
-import type { StudentProfile, DayChecks, ExportPayload } from "./types";
+import type { StudentProfile, DayChecks, ExportPayload, Calibration } from "./types";
 
 const K = {
   profile: "study.profile.v1",
@@ -7,6 +7,7 @@ const K = {
   observationChecks: "study.observationChecks.v1",
   archives: "study.archives.v1",
   manualCollections: "study.collections.v1",
+  calibrations: "study.calibrations.v1",
 } as const;
 
 function loadJson<T>(key: string, fallback: T): T {
@@ -20,7 +21,11 @@ function saveJson(key: string, val: unknown) {
 }
 
 export function loadProfile(): StudentProfile | null {
-  return loadJson<StudentProfile | null>(K.profile, null);
+  const p = loadJson<StudentProfile | null>(K.profile, null);
+  if (p && typeof p === "object" && !("termPhase" in (p as object))) {
+    return { ...(p as StudentProfile), termPhase: "in_term" as const };
+  }
+  return p;
 }
 export function saveProfile(p: StudentProfile) { saveJson(K.profile, p); }
 
@@ -49,6 +54,11 @@ export function loadCollections(): string[] {
 }
 export function saveCollections(a: string[]) { saveJson(K.manualCollections, a); }
 
+export function loadCalibrations(): Calibration[] {
+  return loadJson<Calibration[]>(K.calibrations, []);
+}
+export function saveCalibrations(a: Calibration[]) { saveJson(K.calibrations, a); }
+
 export function todayStr(): string {
   const d = new Date();
   const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), day = String(d.getDate()).padStart(2,"0");
@@ -60,6 +70,7 @@ export function buildExport(): ExportPayload {
     version: 1,
     exportedAt: new Date().toISOString(),
     profile: loadProfile(),
+    calibrations: loadCalibrations(),
     dailyChecks: loadDailyChecks(),
     observationChecks: loadObservationChecks(),
     archives: loadArchives(),
@@ -69,12 +80,12 @@ export function buildExport(): ExportPayload {
 
 export function doImport(payload: ExportPayload) {
   if (payload.version !== 1) throw new Error("不支持的导出版本");
-  if (payload.profile) saveProfile(payload.profile);
+  if (payload.profile) saveProfile(payload.profile as StudentProfile);
+  if ((payload as any).calibrations) saveCalibrations((payload as any).calibrations);
   if (payload.dailyChecks) saveDailyChecks(payload.dailyChecks);
   if (payload.observationChecks) saveObservationChecks(payload.observationChecks);
   if (payload.archives) saveArchives(payload.archives);
   if (payload.manualCollections) saveCollections(payload.manualCollections);
-  // manualPicks 随 dailyChecks 携带，无需单独
 }
 
 export function archiveByGrade(gradeKey: string, checks: DayChecks[]) {
