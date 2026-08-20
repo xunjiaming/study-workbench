@@ -144,6 +144,7 @@ export function buildDailyPlan(opts: {
           pool = [...new Map(pool.map(c=>[c.id,c])).values()];
         }
       }
+      const prePool = [...pool];
       pool = preferUncompleted(pool, opts.dailyChecks);
       const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
       let items: ContentEntry[];
@@ -152,15 +153,15 @@ export function buildDailyPlan(opts: {
         if(isPreview){
           const cu = Math.min(4, Math.max(1, Math.max(...Object.values(opts.previewUnits ?? { "观察提醒":1 }))));
           // take first cu*? or simply first 2 of pool sorted by id numeric
-          const sorted=[...pool].sort((a,b)=> a.id.localeCompare(b.id));
+          const sorted=[...prePool].sort((a,b)=> a.id.localeCompare(b.id));
           const start = ((cu-1)*2) % Math.max(1, sorted.length);
           items = sorted.slice(start, start+quota);
           if(items.length < quota) items = items.concat(sorted.slice(0, quota-items.length));
         } else {
           // sync: use calibration if any, else calendar pick
-          const cal = opts.calibrations.find(c=> c.subject==="语文"||c.subject==="数学");
+          const cal = opts.calibrations.find(c=> c.subject==="语文"||c.subject==="数学"||c.subject==="英语");
           if(cal){
-            const sorted=[...pool].sort((a,b)=> a.id.localeCompare(b.id));
+            const sorted=[...prePool].sort((a,b)=> a.id.localeCompare(b.id));
             const start = ((cal.currentUnit-1)*2) % Math.max(1, sorted.length);
             items = sorted.slice(start, start+quota);
             if(items.length < quota) items = items.concat(sorted.slice(0, quota-items.length));
@@ -173,14 +174,14 @@ export function buildDailyPlan(opts: {
         // sync: U1→01/02 开学基础, preview: 预习进度决定; otherwise calendar
         if(isPreview){
           const cu = Math.min(4, Math.max(1, Math.max(...Object.values(opts.previewUnits ?? { "运动健康":1 }))));
-          const byNum=[...pool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
+          const byNum=[...prePool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
           const start = ((cu-1)*2) % Math.max(1, byNum.length);
           items = byNum.slice(start, start+quota);
           if(items.length < quota) items = items.concat(byNum.slice(0, quota-items.length));
         } else {
           const cal = opts.calibrations.find(c=> c.subject==="语文"||c.subject==="数学"||c.subject==="英语");
           if(cal){
-            const byNum=[...pool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
+            const byNum=[...prePool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
             const start = ((cal.currentUnit-1)*2) % Math.max(1, byNum.length);
             items = byNum.slice(start, start+quota);
             if(items.length < quota) items = items.concat(byNum.slice(0, quota-items.length));
