@@ -26,11 +26,11 @@ export default function ProfilePage(){
   return (<div className="page"><h2>档案 / 设置</h2>
     <div className="form">
       <label>昵称<input value={p.nickname} onChange={e=>setP({...p, nickname:e.target.value})} /></label>
-      <label>年级<select value={p.grade} onChange={e=>setP({...p, grade: Number(e.target.value) as any})}><option value={1}>一年级</option><option value={2}>二年级</option><option value={3}>三年级</option><option value={4}>四年级</option><option value={5}>五年级</option><option value={6}>六年级</option></select></label>
+      <label>年级（学期同步时生效；预习时由“预习目标年级”决定）<select value={p.grade} onChange={e=>setP({...p, grade: Number(e.target.value) as any})}><option value={1}>一年级</option><option value={2}>二年级</option><option value={3}>三年级</option><option value={4}>四年级</option><option value={5}>五年级</option><option value={6}>六年级</option></select></label>
       <label>学期<select value={p.semester} onChange={e=>setP({...p, semester:e.target.value as any})}><option value="上">上</option><option value="下">下</option></select></label>
       <label>学段状态<select value={p.termPhase} onChange={e=>setP({...p, termPhase:e.target.value as any})}><option value="in_term">学期同步</option><option value="preview">假期预习</option></select></label>
       {isPreview && (<>
-        <label>预习目标年级<select value={p.previewTargetGrade ?? 2} onChange={e=>setP({...p, previewTargetGrade: Number(e.target.value) as any})}><option value={1}>一年级</option><option value={2}>二年级</option><option value={3}>三年级</option><option value={4}>四年级</option><option value={5}>五年级</option><option value={6}>六年级</option></select></label>
+        <label>预习目标年级（决定今日预习内容年级）<select value={p.previewTargetGrade ?? 2} onChange={e=>setP({...p, previewTargetGrade: Number(e.target.value) as any})}><option value={1}>一年级</option><option value={2}>二年级</option><option value={3}>三年级</option><option value={4}>四年级</option><option value={5}>五年级</option><option value={6}>六年级</option></select></label>
         <label>开学日期<input type="date" value={p.schoolStartDate ?? ""} onChange={e=>setP({...p, schoolStartDate:e.target.value})} /></label>
         <p className="muted">预习单元可在顶部全局条按语文/数学/英语各拨 1-4 单元，无需在此设置。</p>
       </>)}
@@ -42,6 +42,6 @@ export default function ProfilePage(){
       <label className="check"><input type="checkbox" checked={p.enableQuality} onChange={e=>setP({...p, enableQuality:e.target.checked})} />启用素质与劳动</label>
       <button onClick={save}>保存</button>{msg && <span className="muted">{msg}</span>}
     </div>
-    <p className="muted">年级/学段状态已在顶部全局条固化为可随时调整的进度控件，此页仅作档案总览。</p>
+    <p className="muted">年级/学段状态已在顶部全局条固化为可随时调整的进度控件，此页仅作档案总览。预习态下“年级”仅作档案记录，今日内容由“预习目标年级”决定。</p>
   </div>);
 }

@@ -2,16 +2,17 @@ import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { buildDailyPlan, speak } from "../lib/plan";
 import { loadDailyChecks, loadManualPicks, loadProfile, saveDailyChecks, saveManualPicks, todayStr, loadCalibrations } from "../lib/storage";
+import type { StudentProfile } from "../lib/types";
 
 export default function Today(){
-  const profile=loadProfile();
+  const [profile,setProfile]=useState<StudentProfile | null>(()=>loadProfile());
   const [dateStr]=useState(todayStr());
   const [checks,setChecks]=useState<Record<string,boolean>>({});
   const [manualIds,setManualIds]=useState<string[]>([]);
   const [tick,setTick]=useState(0);
   useEffect(()=>{ const dc=loadDailyChecks()[dateStr]; if(dc) setChecks(dc.checks??{}); const mp=loadManualPicks()[dateStr]; if(mp) setManualIds(mp); },[dateStr,tick]);
   useEffect(()=>{
-    const h=()=>setTick(x=>x+1);
+    const h=()=>{ const p=loadProfile(); setProfile(p); setTick(x=>x+1); };
     window.addEventListener("study:profile-changed", h as any);
     window.addEventListener("study:calibrations-changed", h as any);
     return ()=>{ window.removeEventListener("study:profile-changed", h as any); window.removeEventListener("study:calibrations-changed", h as any); };

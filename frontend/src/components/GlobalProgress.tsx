@@ -52,7 +52,7 @@ export default function GlobalProgress({ onChanged }: { onChanged?: ()=>void }){
       <div className="gp-left">
         <PhaseBadge phase={profile.termPhase} />
         {isPreview ? (
-          <span className="gp-title">假期预习 → {profile.previewTargetGrade}年级上 · 开学 {profile.schoolStartDate ?? "未设"}</span>
+          <span className="gp-title">假期预习 · 档案{profile.grade}年级 → 预习{profile.previewTargetGrade}年级上 · 开学 {profile.schoolStartDate ?? "未设"}</span>
         ) : (
           <span className="gp-title">学期同步 · {profile.grade}年级{profile.semester}学期</span>
         )}
