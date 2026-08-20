@@ -25,6 +25,8 @@ jobs:
           cd frontend
           npm ci
           npm run build
+      - name: Remove node_modules before Jekyll build
+        run: rm -rf frontend/node_modules
       - uses: actions/configure-pages@v5
       - uses: actions/jekyll-build-pages@v1
         with:
@@ -36,6 +38,10 @@ jobs:
           cp -r frontend/dist/* _site/app/ 2>/dev/null || true
           cp _site/app/index.html _site/app/404.html 2>/dev/null || true
           touch _site/.nojekyll 2>/dev/null || true
+          echo "app injected: $(ls -lh _site/app/index.html 2>/dev/null || echo MISSING)"
+          ls -lh _site/app/ | head -20
+          echo "---site root---"
+          ls _site/ | head -20
       - uses: actions/upload-pages-artifact@v3
   deploy:
     needs: build
