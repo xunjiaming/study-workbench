@@ -37,7 +37,7 @@ export default function Today(){
   const isPreview=plan.termPhase==="preview";
   const calText=plan.calibrations && plan.calibrations.length>0 ? plan.calibrations.map(c=>`${c.subject}第${c.currentUnit}单元`).join(" · ") : "未校准（按教材默认）";
   const preText=plan.previewUnits ? Object.entries(plan.previewUnits).map(([k,v])=>`${k}第${v}单元`).join(" · ") : "";
-  return (<div className="page"><div className="page-head"><h2>今日 · {dateStr} · {plan.gradeKey} · {plan.weekTheme} {isPreview && <span className="badge preview">预习</span>}</h2>
+  return (<div className="page"><div className="page-head"><h2>今日 · {dateStr} {isPreview && <span className="badge preview">预习</span>}</h2>
     <div className="sub">{profile.nickname} · {profile.grade}年级{profile.semester}学期 · {profile.textbook.chinese}/{profile.textbook.math}/{profile.textbook.english}</div>
     <div className="muted">{isPreview ? `预习进度：${preText} · 顶部可按学科各拨 1-4 单元` : `校准：${calText}`} </div>
   </div>
