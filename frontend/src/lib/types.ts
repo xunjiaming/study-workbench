@@ -15,6 +15,7 @@ export interface StudentProfile {
   termPhase: TermPhase;
   previewTargetGrade?: 1|2|3|4|5|6;
   schoolStartDate?: string;
+  previewUnits?: Record<string, number>;
   updatedAt: string;
 }
 
@@ -64,6 +65,7 @@ export interface DailyPlan {
   weekTheme: string;
   termPhase?: TermPhase;
   calibrations?: Calibration[];
+  previewUnits?: Record<string, number>;
   modules: DailyModule[];
   manualItems: ContentEntry[];
 }

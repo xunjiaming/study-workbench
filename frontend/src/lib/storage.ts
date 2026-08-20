@@ -22,10 +22,13 @@ function saveJson(key: string, val: unknown) {
 
 export function loadProfile(): StudentProfile | null {
   const p = loadJson<StudentProfile | null>(K.profile, null);
-  if (p && typeof p === "object" && !("termPhase" in (p as object))) {
-    return { ...(p as StudentProfile), termPhase: "in_term" as const };
+  if (!p || typeof p !== "object") return p;
+  let patched = p as StudentProfile;
+  if (!("termPhase" in (patched as object))) patched = { ...patched, termPhase: "in_term" as const };
+  if (patched.termPhase === "preview" && !patched.previewUnits) {
+    patched = { ...patched, previewUnits: { "语文": 1, "数学": 1, "英语": 1 } };
   }
-  return p;
+  return patched;
 }
 export function saveProfile(p: StudentProfile) { saveJson(K.profile, p); }
 

@@ -23,9 +23,10 @@ function resolveGradeKey(grade: number, termPhase: TermPhase, previewTargetGrade
   if (termPhase === "preview" && previewTargetGrade) return `g${previewTargetGrade}`;
   return `g${grade}`;
 }
-function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase): ContentEntry[] {
+function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase, subject: string, previewUnits?: Record<string, number>): ContentEntry[] {
   if (termPhase !== "preview") return pool;
-  const filtered = pool.filter(c=> c.preview && c.unit != null && c.unit <= 4);
+  const maxUnit = previewUnits?.[subject] ?? 1;
+  const filtered = pool.filter(c=> c.preview && c.unit != null && c.unit <= maxUnit);
   return filtered.length > 0 ? filtered : pool;
 }
 function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[], subject: string): ContentEntry[] {
@@ -44,6 +45,7 @@ export function buildDailyPlan(opts: {
   enableQuality: boolean;
   termPhase: TermPhase;
   previewTargetGrade?: number;
+  previewUnits?: Record<string, number>;
   calibrations: Calibration[];
   dailyChecks: Record<string,boolean>;
   manualIds: string[];
@@ -57,8 +59,8 @@ export function buildDailyPlan(opts: {
     .filter(m=> !(m.subject==="素质劳动" && !opts.enableQuality))
     .map(m=>{
       let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
-      if (isPreview) pool = applyPreviewFilter(pool, opts.termPhase);
-      pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
+      if (isPreview) pool = applyPreviewFilter(pool, opts.termPhase, m.subject, opts.previewUnits);
+      else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
       pool = preferUncompleted(pool, opts.dailyChecks);
       const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
       const offset = MODULE_OFFSET[m.moduleKey] ?? 0;
@@ -66,7 +68,7 @@ export function buildDailyPlan(opts: {
       return { moduleKey: m.moduleKey, title: m.title, items };
     });
   const manualItems = opts.manualIds.map(id=> CONTENT_POOL.find(c=>c.id===id)).filter(Boolean) as ContentEntry[];
-  return { date: opts.dateStr, gradeKey, weekTheme, termPhase: opts.termPhase, calibrations: opts.calibrations, modules, manualItems };
+  return { date: opts.dateStr, gradeKey, weekTheme, termPhase: opts.termPhase, previewUnits: opts.previewUnits, calibrations: opts.calibrations, modules, manualItems };
 }
 export function speak(text: string) {
   if (!("speechSynthesis" in window)) return;

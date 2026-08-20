@@ -38,14 +38,14 @@
 | `/` | 今日 | 当日计划（6 大模块）、打勾、再做一次、今日手工条目 |
 | `/library` | 活动库 | 按年级×学科×主题筛选，预览条目，手工加入今日/收藏 |
 | `/observation` | 学习观察 | 按年级的观察项打勾，跨年级归档回看 |
-| `/profile` | 档案/设置 | 昵称、年级/学期、学段状态（预习/同步）与开学日期、校准进度（按学科单元下拉）、教材版本、时段、薄弱偏好、英语/素质开关 |
+| `/profile` | 档案/设置 | 昵称、年级/学期、教材版本、时段、薄弱偏好、英语/素质开关（学段与校准已上移至顶部全局进度条） |
 | `/me` | 我的 | 导出/导入 JSON（含校准历史）、归档浏览、使用说明 |
 
 ### 2.2 页面联动
 
 - 今日页：左栏 6 模块锚点，点击滚动到右侧对应板块；顶部显示当前年级带与本周主题。
 - 活动库 → 今日：手工加入后在今日顶部以“今日加入”分组展示，与自动条目同等打勾。
-- 档案变更（改年级/学期/学段状态/校准进度）→ 次日计划即按新判定生成，旧记录与校准历史写入归档。预习态与同步态切换、校准调整均次日生效。
+- 全局进度条（Layout 顶部 sticky，三科各一根）：预习态为三组“语文/数学/英语各步进 + mini 进度条（1-4）”，同步态为三组独立下拉（1-8 + 清除），学段切换带二次确认弹窗；档案/全局条变更均次日生效，旧记录与校准历史写入归档。档案页仅保留提示“进度在顶部全局条调整”。
 
 ---
 
@@ -239,7 +239,7 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
     let pool = contentPool.filter(c => c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed);
     if (m.subject === "素质劳动" && !profile.enableQuality) return null;
     if (m.subject === "英语" && !profile.enableEnglish) return null;
-    pool = isPreview ? applyPreviewFilter(pool, profile) : pool;
+    pool = isPreview ? applyPreviewFilterBySubject(pool, profile.termPhase, m.subject, profile.previewUnits) : pool;
     pool = applyCalibrationWeight(pool, calibrations, m.subject);
     pool = preferUncompleted(pool, date);
     const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
@@ -257,7 +257,7 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 - 同一天、同年级（含预习目标年级）、同周主题、同校准进度的自动部分必相同；手工部分按 localStorage 叠加。
 - 已完成过滤仅改变排序偏好，不改变确定性；已完成仍可“再做一次”。
 - 手工加入次日不自动携带，需家长再次加入。
-- 预习态：内容仅来自 preview + unit≤4 的预热池，日配额每模块≤2，总量 20-30 分钟。
+- 预习态：三科各 1-4 独立进度，内容仅来自 preview + unit<=该科进度 的预热池，日配额每模块≤2，总量 20-30 分钟；同步态与预习态切换需二次确认。
 - 同步态：校准后已教单元权重转巩固、正在学单元权重提升、未教单元仅轻量预习或不出现；校准变更次日生效。
 
 ---
@@ -292,6 +292,7 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 
 ## 7. 交互与视觉（概要）
 
+- 顶部全局进度条（sticky）：暖粉 baby-education 风格（--primary #ff6b9d / --line #ffe0ec / --radius 16px），预习态三组步进+mini进度条，同步态三组下拉+清除；切换学段二次确认弹窗。
 - 左栏：常驻 5 项导航，彩色图标 + 文字，宽度 200-240px，不收起。
 - 右区：6 模块纵向堆叠，每模块卡片式，标题 + 条目列表；条目含标题、时长、材料、玩法、左侧复选框。
 - 状态：未完成/已完成（勾选态）、今日加入（高亮分组）、可跳过/明日再补。
@@ -302,7 +303,7 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 
 ## 8. 存储、导入导出与归档
 
-导出 JSON 含 version/profile（含 termPhase/previewTargetGrade/schoolStartDate）/calibrations/dailyChecks/observationChecks/archives/manualCollections；导入时校验并合并，失败保留原数据。升年级与学段切换（预习→同步）时上一阶段 dailyChecks 按 gradeKey+term 归档；校准历史与预习记录纳入导出。
+导出 JSON 含 version/profile（含 termPhase/previewTargetGrade/schoolStartDate/previewUnits 三科各1-4）/calibrations/dailyChecks/observationChecks/archives/manualCollections；导入时校验并合并，失败保留原数据。升年级与学段切换（预习→同步）时上一阶段 dailyChecks 按 gradeKey+term 归档；校准历史与预习记录纳入导出。
 
 ---
 
@@ -337,8 +338,8 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 | 全量覆盖且已审核 | 每池≥10 且 reviewed | 统计 contentPool 按 gradeKey×subject 分组计数 |
 | 已完成复用+手工选 | manualPicks 叠加 | 打勾可取消重做；活动库加入后持久化 |
 | 多设备在线+导入导出 | 静态部署+JSON 往返（含校准） | 三端访问 + 导出导入数据一致，校准历史不丢 |
-| 预习衔接 | F13 预习包 | 开启预习到二上后次日计划为 preview 内容且活动库可筛预习标签 |
-| 进度校准 | F14 校准权重 | 校准到第2单元后次日计划第1单元转巩固、第3单元不提前 |
+| 预习衔接 | F13 预习包（三科各1-4全局条） | 开启预习到二上后三科各拨 1-4，次日计划仅含对应 unit 且活动库可筛预习标签 |
+| 进度校准 | F14 全局条三科独立校准(1-8)+二次确认 | 三科各校准到第2单元后次日计划第1单元转巩固、第3单元不提前；全局条可清除 |
 | 无账号云同步 | 本机存储 | 无登录入口，无云端写入 |
 
 ---
@@ -360,6 +361,6 @@ function buildDailyPlan(profile, date, calibrations = loadCalibrations()) {
 - ID 规范：g{grade}-{subjectPinyin}-{themePinyin}-{seq:03d}
 - 主题枚举：阅读、口算、词汇、表达、科普实验、劳动生活、复盘
 - 周主题可配置：THEMES 数组替换即生效，按生成时主题快照存储 weekTheme。
-- 校准与预习开关：termPhase/previewTargetGrade/schoolStartDate/calibrations 变更均次日生效；导出导入与归档均包含校准历史。
+- 校准与预习开关：termPhase/previewTargetGrade/schoolStartDate/previewUnits/calibrations 变更均次日生效（含全局条三科独立进度）；导出导入与归档均包含校准历史与预习进度。
 
 > 本方案与 docs/REQUIREMENTS.md F1-F14 一致（2026-08-20 增量）；改动需同步更新 REQUIREMENTS 与 README。
