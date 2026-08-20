@@ -7906,14 +7906,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 1,
     "preview": true,
-    "title": "识字卡片认读·预习",
+    "textbook": "人教版",
+    "title": "识字·预习 人教二上U1 塘/脑/袋/灰/捕/迎",
     "materials": "识字卡片、生字本",
-    "how": "用识字卡片认读二上生字6个，边指边读，家长点读1遍。",
+    "how": "预习人教二上U1《小蝌蚪找妈妈》生字：抄写塘/脑/袋/灰/捕/迎各1遍，家长听写抽查3个。",
+    "detail": {"chars":[{"char":"塘","pinyin":"táng","words":["池塘","荷塘"]},{"char":"脑","pinyin":"nǎo","words":["脑袋","脑筋"]},{"char":"袋","pinyin":"dài","words":["口袋","袋子"]},{"char":"灰","pinyin":"huī","words":["灰色","灰尘"]},{"char":"捕","pinyin":"bǔ","words":["捕捉","捕鱼"]},{"char":"迎","pinyin":"yíng","words":["欢迎","迎接"]}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-math-u1-001",
@@ -7942,14 +7944,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 1,
     "preview": true,
-    "title": "字母歌跟读·预习",
+    "textbook": "人教版",
+    "title": "英语·预习 人教二上U1 pen/book/ruler",
     "materials": "字母卡片、音频",
-    "how": "播放字母歌音频跟唱2遍，指认A-G字母卡片，家长示范发音。",
+    "how": "跟读人教二上U1文具单词 pen/book/ruler 各3遍，用 This is a ... 造句1句。",
+    "detail": {"vocab":[{"en":"pen","cn":"钢笔","sentence":"This is a pen."},{"en":"book","cn":"书","sentence":"I have a book."},{"en":"ruler","cn":"尺子","sentence":"This is a ruler."}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-chinese-u2-001",
@@ -7959,14 +7963,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 2,
     "preview": true,
-    "title": "拼音拼读预热·预习",
+    "textbook": "人教版",
+    "title": "识字·预习 人教二上U2 滩/艘/帆/稻/梧/桐",
     "materials": "拼音卡片、课本目录页",
-    "how": "拼读卡片 b-p-m-f 与二上生字拼读各2个，家长慢读示范。",
+    "how": "预习人教二上U2《场景歌/树之歌》生字滩/艘/帆/稻/梧/桐，组词1个并造句。",
+    "detail": {"chars":[{"char":"滩","pinyin":"tān","words":["沙滩","河滩"]},{"char":"艘","pinyin":"sōu","words":["一艘船"]},{"char":"帆","pinyin":"fān","words":["帆船","扬帆"]},{"char":"稻","pinyin":"dào","words":["水稻","稻田"]},{"char":"梧","pinyin":"wú","words":["梧桐"]},{"char":"桐","pinyin":"tóng","words":["梧桐","桐树"]}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-math-u2-001",
@@ -7995,14 +8001,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 2,
     "preview": true,
-    "title": "问候句型磨耳朵·预习",
+    "textbook": "人教版",
+    "title": "英语·预习 人教二上U2 Hello/pencil/bag",
     "materials": "音频、卡片",
-    "how": "跟读问候句 Hello, how are you? / I am fine. 各3遍，家长对答。",
+    "how": "跟读问候与学习用品 Hello how are you / pencil / bag，家长对答演练。",
+    "detail": {"vocab":[{"en":"hello","cn":"你好","sentence":"Hello, how are you?"},{"en":"pencil","cn":"铅笔","sentence":"This is a pencil."},{"en":"bag","cn":"书包","sentence":"I have a bag."}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-chinese-u3-001",
@@ -8012,14 +8020,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 3,
     "preview": true,
-    "title": "看图写话一句·预习",
+    "textbook": "人教版",
+    "title": "识字·预习 人教二上U3 称/柱/底/杆/秤",
     "materials": "白纸、铅笔、校园图片",
-    "how": "看图（校园一角）写1句话，家长帮忙补充1个形容词。",
+    "how": "预习人教二上U3《曹冲称象》生字称/柱/底/杆/秤，重点读准 cheng/zhu/di。",
+    "detail": {"chars":[{"char":"称","pinyin":"chēng","words":["称象","称重"]},{"char":"柱","pinyin":"zhù","words":["柱子","圆柱"]},{"char":"底","pinyin":"dǐ","words":["底下","海底"]},{"char":"杆","pinyin":"gǎn","words":["秤杆","旗杆"]},{"char":"秤","pinyin":"chèng","words":["秤杆","台秤"]}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-math-u3-001",
@@ -8029,14 +8039,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 3,
     "preview": true,
-    "title": "表内乘法口诀预热·预习",
+    "textbook": "人教版",
+    "title": "角的初步认识·预习（人教二上U3）",
     "materials": "积木、口算卡",
-    "how": "背诵2的乘法口诀并用积木摆 2x3=6 的实物。",
+    "how": "预习角：数角、画直角、比大小，完成4题。",
+    "detail": {"problems":[{"q":"三角尺有( )个角，其中直角有( )个","a":"3个角，1个直角"},{"q":"比一比：直角 ○ 锐角","a":"＞"},{"q":"画一个直角，标出顶点和两条边","a":"动手画"},{"q":"正方形纸剪去1个角，还剩几个角？","a":"3或4或5个"}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-english-u3-001",
@@ -8046,14 +8058,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 3,
     "preview": true,
-    "title": "绘本单词跟读·预习",
+    "textbook": "人教版",
+    "title": "英语·预习 人教二上U3 apple/cat/dog/sun",
     "materials": "绘本、单词卡",
-    "how": "绘本跟读5个单词 apple/book/cat/dog/sun，家长指图领读。",
+    "how": "跟读U3水果动物单词 apple/cat/dog/sun，指图认读各2遍。",
+    "detail": {"vocab":[{"en":"apple","cn":"苹果","sentence":"I like apples."},{"en":"cat","cn":"猫","sentence":"The cat is cute."},{"en":"dog","cn":"狗","sentence":"I have a dog."},{"en":"sun","cn":"太阳","sentence":"The sun is red."}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-chinese-u4-001",
@@ -8063,14 +8077,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 4,
     "preview": true,
-    "title": "朗读打卡预热·预习",
+    "textbook": "人教版",
+    "title": "识字·预习 人教二上U4 楼/依/尽/黄",
     "materials": "课本、铅笔",
-    "how": "朗读二上课文片段2段，读准字音，家长旁听点赞。",
+    "how": "预习人教二上U4《古诗二首》生字楼/依/尽/黄，背诵《登鹳雀楼》1首。",
+    "detail": {"chars":[{"char":"楼","pinyin":"lóu","words":["高楼","楼房"]},{"char":"依","pinyin":"yī","words":["依靠","依山"]},{"char":"尽","pinyin":"jìn","words":["尽头","用尽"]},{"char":"黄","pinyin":"huáng","words":["黄河","金黄"]}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-math-u4-001",
@@ -8080,14 +8096,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 4,
     "preview": true,
-    "title": "购物找零生活数学·预习",
+    "textbook": "人教版",
+    "title": "表内乘法(一)·预习（人教二上U4）",
     "materials": "零钱、文具",
-    "how": "用零钱做购物找零：10元买3元文具，算找回多少。",
+    "how": "背4的乘法口诀并笔算，完成6题。",
+    "detail": {"problems":[{"q":"4 × 6 = ","a":"24"},{"q":"5 × 7 = ","a":"35"},{"q":"3 × 8 = ","a":"24"},{"q":"6 × 6 = ","a":"36"},{"q":"一盒有4个苹果，5盒共有？","a":"20个"},{"q":"背出4的乘法口诀","a":"四四十六等"}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   },
   {
     "id": "g2-preview-english-u4-001",
@@ -8097,14 +8115,16 @@ export const CONTENT_POOL: ContentEntry[] = [
     "term": "上",
     "unit": 4,
     "preview": true,
-    "title": "日常短句对话·预习",
+    "textbook": "人教版",
+    "title": "英语·预习 人教二上U4 May I have / Here you are",
     "materials": "卡片、玩偶",
-    "how": "对话练习 May I have ... / Here you are. 情景演练1遍。",
+    "how": "情景对话 May I have ... / Here you are / Thank you 演练1遍。",
+    "detail": {"vocab":[{"en":"May I have a pen?","cn":"可以给我一支钢笔吗？","sentence":"May I have a pen? Here you are."},{"en":"Here you are","cn":"给你","sentence":"Here you are. Thank you."},{"en":"Thank you","cn":"谢谢你","sentence":"Thank you very much."}]},
     "duration": "10分钟",
     "safety": "无；保持桌面清空只留本项。",
     "source": "human_reviewed",
     "reviewed": true,
-    "tags": ["预习"]
+    "tags": ["预习","人教版"]
   }
 ];
 for (const e of CURRICULUM_ENTRIES) CONTENT_POOL.push(e);
