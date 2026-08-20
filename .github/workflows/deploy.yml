@@ -34,10 +34,11 @@ jobs:
           destination: ./_site
       - name: Copy frontend dist and add SPA fallback
         run: |
-          mkdir -p _site/app
-          cp -r frontend/dist/* _site/app/ 2>/dev/null || true
-          cp _site/app/index.html _site/app/404.html 2>/dev/null || true
-          touch _site/.nojekyll 2>/dev/null || true
+          sudo mkdir -p _site/app
+          sudo cp -r frontend/dist/* _site/app/ 2>/dev/null || true
+          sudo cp _site/app/index.html _site/app/404.html 2>/dev/null || true
+          sudo touch _site/.nojekyll 2>/dev/null || true
+          sudo chown -R $USER:$USER _site 2>/dev/null || true
           echo "app injected: $(ls -lh _site/app/index.html 2>/dev/null || echo MISSING)"
           ls -lh _site/app/ | head -20
           echo "---site root---"
