@@ -26,8 +26,11 @@ function resolveGradeKey(grade: number, termPhase: TermPhase, previewTargetGrade
 function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase, subject: string, previewUnits?: Record<string, number>): ContentEntry[] {
   if (termPhase !== "preview") return pool;
   const maxUnit = previewUnits?.[subject] ?? 1;
-  const filtered = pool.filter(c=> c.preview && c.unit != null && c.unit <= maxUnit);
-  return filtered.length > 0 ? filtered : pool;
+  // B方案：当前单元优先，旧单元权重减半垫后（不带未学）
+  const cur = pool.filter(c=> c.preview && c.unit === maxUnit);
+  const old = pool.filter(c=> c.preview && c.unit != null && c.unit < maxUnit);
+  const withCur = cur.length>0 ? [...cur, ...old] : (old.length>0 ? old : pool.filter(c=> c.preview));
+  return withCur.length>0 ? withCur : pool;
 }
 function subjectTextbook(subject: string, tb?: { chinese: string; math: string; english: string }): string | undefined {
   if (!tb) return undefined;
