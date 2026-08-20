@@ -126,9 +126,34 @@ export function buildDailyPlan(opts: {
       } else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
       pool = preferUncompleted(pool, opts.dailyChecks);
       const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
-      const offset = MODULE_OFFSET[m.moduleKey] ?? 0;
-      let items = deterministicPick(pool, quota, dayIndex + offset + opts.grade*13);
-      if(m.subject==="数学") items = patchMathEntries(items, opts.grade, opts.dateStr);
+      let items: ContentEntry[];
+      if(m.subject==="观察提醒"){
+        // align observation with learning phase, not calendar
+        if(isPreview){
+          const cu = Math.min(4, Math.max(1, Math.max(...Object.values(opts.previewUnits ?? { "观察提醒":1 }))));
+          // take first cu*? or simply first 2 of pool sorted by id numeric
+          const sorted=[...pool].sort((a,b)=> a.id.localeCompare(b.id));
+          const start = ((cu-1)*2) % Math.max(1, sorted.length);
+          items = sorted.slice(start, start+quota);
+          if(items.length < quota) items = items.concat(sorted.slice(0, quota-items.length));
+        } else {
+          // sync: use calibration if any, else calendar pick
+          const cal = opts.calibrations.find(c=> c.subject==="语文"||c.subject==="数学");
+          if(cal){
+            const sorted=[...pool].sort((a,b)=> a.id.localeCompare(b.id));
+            const start = ((cal.currentUnit-1)*2) % Math.max(1, sorted.length);
+            items = sorted.slice(start, start+quota);
+            if(items.length < quota) items = items.concat(sorted.slice(0, quota-items.length));
+          } else {
+            const off = MODULE_OFFSET[m.moduleKey] ?? 0;
+            items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
+          }
+        }
+      } else {
+        const off = MODULE_OFFSET[m.moduleKey] ?? 0;
+        items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
+        if(m.subject==="数学") items = patchMathEntries(items, opts.grade, opts.dateStr);
+      }
       return { moduleKey: m.moduleKey, title: m.title, items };
     });
   let manualItems = opts.manualIds.map(id=> CONTENT_POOL.find(c=>c.id===id)).filter(Boolean) as ContentEntry[];
