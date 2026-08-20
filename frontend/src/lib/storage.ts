@@ -28,6 +28,10 @@ export function loadProfile(): StudentProfile | null {
   if (patched.termPhase === "preview" && !patched.previewUnits) {
     patched = { ...patched, previewUnits: { "语文": 1, "数学": 1, "英语": 1 } };
   }
+  if (patched.termPhase === "in_term") {
+    // ensure previewUnits stays for when switching back
+    if (!patched.previewUnits) patched = { ...patched, previewUnits: { "语文": 1, "数学": 1, "英语": 1 } } as StudentProfile;
+  }
   return patched;
 }
 export function saveProfile(p: StudentProfile) { saveJson(K.profile, p); }
@@ -58,7 +62,17 @@ export function loadCollections(): string[] {
 export function saveCollections(a: string[]) { saveJson(K.manualCollections, a); }
 
 export function loadCalibrations(): Calibration[] {
-  return loadJson<Calibration[]>(K.calibrations, []);
+  const raw = loadJson<Calibration[]>(K.calibrations, []);
+  if (raw && raw.length>0) return raw;
+  // default to U1 for all three so sync mode has stable first-unit content
+  const def: Calibration[] = [
+    { subject: "语文", currentUnit: 1, updatedAt: new Date().toISOString() },
+    { subject: "数学", currentUnit: 1, updatedAt: new Date().toISOString() },
+    { subject: "英语", currentUnit: 1, updatedAt: new Date().toISOString() },
+  ];
+  // persist once so subsequent loads are stable without extra writes on every render
+  try { localStorage.setItem(K.calibrations, JSON.stringify(def)); } catch {}
+  return def;
 }
 export function saveCalibrations(a: Calibration[]) { saveJson(K.calibrations, a); }
 
