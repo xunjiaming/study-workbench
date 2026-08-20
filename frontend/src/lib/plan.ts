@@ -19,8 +19,7 @@ function preferUncompleted(pool: ContentEntry[], checks: Record<string,boolean>)
   const done = pool.filter(c=> checks[c.id]);
   return un.length>= pool.length/2 ? [...un, ...done] : pool;
 }
-function resolveGradeKey(grade: number, termPhase: TermPhase, previewTargetGrade?: number): string {
-  if (termPhase === "preview" && previewTargetGrade) return `g${previewTargetGrade}`;
+function resolveGradeKey(grade: number): string {
   return `g${grade}`;
 }
 function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase, subject: string, previewUnits?: Record<string, number>): ContentEntry[] {
@@ -106,13 +105,12 @@ export function buildDailyPlan(opts: {
   enableEnglish: boolean;
   enableQuality: boolean;
   termPhase: TermPhase;
-  previewTargetGrade?: number;
   previewUnits?: Record<string, number>;
   calibrations: Calibration[];
   dailyChecks: Record<string,boolean>;
   manualIds: string[];
 }): DailyPlan {
-  const gradeKey = resolveGradeKey(opts.grade, opts.termPhase, opts.previewTargetGrade);
+  const gradeKey = resolveGradeKey(opts.grade);
   const weekTheme = weekThemeOf(opts.dateStr);
   const dayIndex = daysSinceMonthStart(opts.dateStr);
   const isPreview = opts.termPhase === "preview";

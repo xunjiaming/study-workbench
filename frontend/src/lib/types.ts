@@ -13,7 +13,6 @@ export interface StudentProfile {
   enableEnglish: boolean;
   enableQuality: boolean;
   termPhase: TermPhase;
-  previewTargetGrade?: 1|2|3|4|5|6;
   schoolStartDate?: string;
   previewUnits?: Record<string, number>;
   updatedAt: string;
