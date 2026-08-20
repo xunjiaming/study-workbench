@@ -134,7 +134,16 @@ export function buildDailyPlan(opts: {
         pool = applyPreviewFilter(pool, opts.termPhase, m.subject, opts.previewUnits);
         const withDetail = pool.filter(c=> (c as any).detail && (((c as any).detail.problems && (c as any).detail.problems.length) || ((c as any).detail.chars && (c as any).detail.chars.length) || ((c as any).detail.vocab && (c as any).detail.vocab.length)));
         if (withDetail.length > 0) pool = [...withDetail, ...pool.filter(c=> !withDetail.includes(c))];
-      } else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
+      } else {
+        pool = pool.filter(c=> !(c as any).preview); // sync must not show preview items
+        pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
+        const syncDetail = pool.filter(c=> (c as any).detail && (((c as any).detail.problems && (c as any).detail.problems.length) || ((c as any).detail.chars && (c as any).detail.chars.length) || ((c as any).detail.vocab && (c as any).detail.vocab.length)));
+        if(syncDetail.length>0 && m.subject!=="数学"){
+          const remaining = pool.filter(c=> !syncDetail.includes(c));
+          pool = [...syncDetail, ...remaining.filter(c=> !syncDetail.includes(c))];
+          pool = [...new Map(pool.map(c=>[c.id,c])).values()];
+        }
+      }
       pool = preferUncompleted(pool, opts.dailyChecks);
       const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
       let items: ContentEntry[];
