@@ -74,8 +74,11 @@ export function buildDailyPlan(opts: {
       const tbVersion = subjectTextbook(m.subject, opts.textbook);
       let pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed && matchesTextbook(c, tbVersion)) as ContentEntry[];
       if (pool.length===0) pool = CONTENT_POOL.filter(c=> c.gradeKey===gradeKey && c.subject===m.subject && c.reviewed) as ContentEntry[];
-      if (isPreview) pool = applyPreviewFilter(pool, opts.termPhase, m.subject, opts.previewUnits);
-      else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
+      if (isPreview) {
+        pool = applyPreviewFilter(pool, opts.termPhase, m.subject, opts.previewUnits);
+        const withDetail = pool.filter(c=> (c as any).detail && (((c as any).detail.problems && (c as any).detail.problems.length) || ((c as any).detail.chars && (c as any).detail.chars.length) || ((c as any).detail.vocab && (c as any).detail.vocab.length)));
+        if (withDetail.length > 0) pool = [...withDetail, ...pool.filter(c=> !withDetail.includes(c))];
+      } else pool = applyCalibrationWeight(pool, opts.calibrations, m.subject);
       pool = preferUncompleted(pool, opts.dailyChecks);
       const quota = isPreview ? Math.min(m.quota, 2) : m.quota;
       const offset = MODULE_OFFSET[m.moduleKey] ?? 0;
