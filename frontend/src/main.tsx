@@ -1,3 +1,5 @@
+import { trackInstallPrompt } from "./lib/install";
+trackInstallPrompt();
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
