@@ -30,10 +30,12 @@ jobs:
         with:
           source: ./
           destination: ./_site
-      - name: Copy frontend dist
+      - name: Copy frontend dist and add SPA fallback
         run: |
           mkdir -p _site/app
           cp -r frontend/dist/* _site/app/ 2>/dev/null || true
+          cp _site/app/index.html _site/app/404.html 2>/dev/null || true
+          touch _site/.nojekyll 2>/dev/null || true
       - uses: actions/upload-pages-artifact@v3
   deploy:
     needs: build
