@@ -26,11 +26,10 @@ function resolveGradeKey(grade: number, termPhase: TermPhase, previewTargetGrade
 function applyPreviewFilter(pool: ContentEntry[], termPhase: TermPhase, subject: string, previewUnits?: Record<string, number>): ContentEntry[] {
   if (termPhase !== "preview") return pool;
   const maxUnit = previewUnits?.[subject] ?? 1;
-  // B方案：当前单元优先，旧单元权重减半垫后（不带未学）
   const cur = pool.filter(c=> c.preview && c.unit === maxUnit);
-  const old = pool.filter(c=> c.preview && c.unit != null && c.unit < maxUnit);
-  const withCur = cur.length>0 ? [...cur, ...old] : (old.length>0 ? old : pool.filter(c=> c.preview));
-  return withCur.length>0 ? withCur : pool;
+  if (cur.length>0) return cur;
+  const genericPreview = pool.filter(c=> c.preview);
+  return genericPreview.length>0 ? genericPreview : pool;
 }
 function subjectTextbook(subject: string, tb?: { chinese: string; math: string; english: string }): string | undefined {
   if (!tb) return undefined;
@@ -48,17 +47,11 @@ function applyCalibrationWeight(pool: ContentEntry[], calibrations: Calibration[
   const cal = calibrations.find(c=> c.subject === subject);
   if (!cal) return pool;
   const cur = pool.filter(c=> c.unit === cal.currentUnit);
-  const future = pool.filter(c=> c.unit != null && c.unit > cal.currentUnit);
-  const noUnit = pool.filter(c=> c.unit == null);
-  // U1 has no "already learned" — dont pad with before
   const withDetail = (arr: ContentEntry[]) => {
     const d = arr.filter(c=> (c as any).detail);
     return d.length>0 ? [...d, ...arr.filter(c=> !(c as any).detail)] : arr;
   };
-  const curOrdered = withDetail(cur);
-  if (cal.currentUnit === 1) return [...curOrdered, ...withDetail(future), ...noUnit];
-  const before = pool.filter(c=> c.unit != null && c.unit < cal.currentUnit);
-  return [...curOrdered, ...withDetail(before), ...withDetail(future), ...noUnit];
+  return withDetail(cur);
 }
 
 
