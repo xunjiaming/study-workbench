@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { buildDailyPlan, speak } from "../lib/plan";
 import { loadDailyChecks, loadManualPicks, loadProfile, saveDailyChecks, saveManualPicks, todayStr, loadCalibrations } from "../lib/storage";
@@ -29,7 +30,7 @@ export default function Today(){
   },[profile,dateStr,checks,manualIds,tick]);
   function toggle(id:string){ const next={...checks,[id]:!checks[id]}; if(!next[id]) delete next[id]; setChecks(next); const all=loadDailyChecks(); all[dateStr]={date:dateStr,checks:next,manualPicks:manualIds,repeatable:true} as any; saveDailyChecks(all); setTick(x=>x+1); }
   function removeManual(id:string){ const next=manualIds.filter(x=>x!==id); setManualIds(next); const mp=loadManualPicks(); mp[dateStr]=next; saveManualPicks(mp); const all=loadDailyChecks(); if(all[dateStr]){ all[dateStr].manualPicks=next; saveDailyChecks(all);} setTick(x=>x+1); }
-  if(!profile) return (<div className="empty">请先到“档案”设置年级与教材。<a href="/profile">去设置</a></div>);
+  if(!profile) return (<div className="empty">请先到“档案”设置年级与教材。<Link to="/profile">去设置</Link></div>);
   if(!plan) return null;
   const isPreview=plan.termPhase==="preview";
   const calText=plan.calibrations && plan.calibrations.length>0 ? plan.calibrations.map(c=>`${c.subject}第${c.currentUnit}单元`).join(" · ") : "未校准（按教材默认）";
