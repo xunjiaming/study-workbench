@@ -169,6 +169,26 @@ export function buildDailyPlan(opts: {
             items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
           }
         }
+      } else if(m.subject==="运动健康"){
+        // sync: U1→01/02 开学基础, preview: 预习进度决定; otherwise calendar
+        if(isPreview){
+          const cu = Math.min(4, Math.max(1, Math.max(...Object.values(opts.previewUnits ?? { "运动健康":1 }))));
+          const byNum=[...pool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
+          const start = ((cu-1)*2) % Math.max(1, byNum.length);
+          items = byNum.slice(start, start+quota);
+          if(items.length < quota) items = items.concat(byNum.slice(0, quota-items.length));
+        } else {
+          const cal = opts.calibrations.find(c=> c.subject==="语文"||c.subject==="数学"||c.subject==="英语");
+          if(cal){
+            const byNum=[...pool].sort((a,b)=>{ const na=Number((a.title.match(/第(\d+)练/)||[])[1]||0); const nb=Number((b.title.match(/第(\d+)练/)||[])[1]||0); return na-nb || a.id.localeCompare(b.id); });
+            const start = ((cal.currentUnit-1)*2) % Math.max(1, byNum.length);
+            items = byNum.slice(start, start+quota);
+            if(items.length < quota) items = items.concat(byNum.slice(0, quota-items.length));
+          } else {
+            const off = MODULE_OFFSET[m.moduleKey] ?? 0;
+            items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
+          }
+        }
       } else {
         const off = MODULE_OFFSET[m.moduleKey] ?? 0;
         items = deterministicPick(pool, quota, dayIndex + off + opts.grade*13);
